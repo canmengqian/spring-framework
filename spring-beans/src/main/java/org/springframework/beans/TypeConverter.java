@@ -23,6 +23,7 @@ import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.lang.Nullable;
 
 /**
+ * 用于实现属性转换
  * Interface that defines type conversion methods. Typically (but not necessarily)
  * implemented in conjunction with the {@link PropertyEditorRegistry} interface.
  *

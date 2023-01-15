@@ -78,6 +78,7 @@ import org.springframework.lang.Nullable;
 import org.springframework.util.ClassUtils;
 
 /**
+ * 注册器的实现类
  * Base implementation of the {@link PropertyEditorRegistry} interface.
  * Provides management of default editors and custom editors.
  * Mainly serves as base class for {@link BeanWrapperImpl}.
@@ -93,20 +94,20 @@ import org.springframework.util.ClassUtils;
 public class PropertyEditorRegistrySupport implements PropertyEditorRegistry {
 
 	@Nullable
-	private ConversionService conversionService;
+	private ConversionService conversionService; // 转换服务
 
-	private boolean defaultEditorsActive = false;
+	private boolean defaultEditorsActive = false; //默认编辑器
 
-	private boolean configValueEditorsActive = false;
-
-	@Nullable
-	private Map<Class<?>, PropertyEditor> defaultEditors;
+	private boolean configValueEditorsActive = false;// 可配置值编辑器
 
 	@Nullable
-	private Map<Class<?>, PropertyEditor> overriddenDefaultEditors;
+	private Map<Class<?>, PropertyEditor> defaultEditors;// 默认的编辑器
 
 	@Nullable
-	private Map<Class<?>, PropertyEditor> customEditors;
+	private Map<Class<?>, PropertyEditor> overriddenDefaultEditors;//覆写默认的编辑器
+
+	@Nullable
+	private Map<Class<?>, PropertyEditor> customEditors;//自定义编辑器
 
 	@Nullable
 	private Map<String, CustomEditorHolder> customEditorsForPath;

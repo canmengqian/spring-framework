@@ -19,6 +19,7 @@ package org.springframework.beans;
 import java.beans.PropertyDescriptor;
 
 /**
+ * 用于获取包装的实例和获取 属性描述器
  * The central interface of Spring's low-level JavaBeans infrastructure.
  *
  * <p>Typically not used directly but rather implicitly via a

@@ -20,6 +20,7 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.lang.Nullable;
 
 /**
+ * 提供转换服务和路径增长类型属性的判断和设置
  * Interface that encapsulates configuration methods for a PropertyAccessor.
  * Also extends the PropertyEditorRegistry interface, which defines methods
  * for PropertyEditor management.
