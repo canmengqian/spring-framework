@@ -41,10 +41,12 @@ import org.springframework.util.ResourceUtils;
  */
 public interface ResourceLoader {
 
+	// 类路径前缀
 	/** Pseudo URL prefix for loading from the class path: "classpath:". */
 	String CLASSPATH_URL_PREFIX = ResourceUtils.CLASSPATH_URL_PREFIX;
 
 
+	// 根据文件地址获取资源
 	/**
 	 * Return a {@code Resource} handle for the specified resource location.
 	 * <p>The handle should always be a reusable resource descriptor,
@@ -66,6 +68,7 @@ public interface ResourceLoader {
 	 */
 	Resource getResource(String location);
 
+	// 获取类加载器
 	/**
 	 * Expose the {@link ClassLoader} used by this {@code ResourceLoader}.
 	 * <p>Clients which need to access the {@code ClassLoader} directly can do so

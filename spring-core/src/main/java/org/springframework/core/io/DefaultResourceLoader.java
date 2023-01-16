@@ -51,8 +51,10 @@ public class DefaultResourceLoader implements ResourceLoader {
 	@Nullable
 	private ClassLoader classLoader;
 
+	// 协议集合
 	private final Set<ProtocolResolver> protocolResolvers = new LinkedHashSet<>(4);
 
+	// 缓存的资源
 	private final Map<Class<?>, Map<Resource, ?>> resourceCaches = new ConcurrentHashMap<>(4);
 
 
@@ -95,6 +97,7 @@ public class DefaultResourceLoader implements ResourceLoader {
 	@Override
 	@Nullable
 	public ClassLoader getClassLoader() {
+		// 获取默认类加载器
 		return (this.classLoader != null ? this.classLoader : ClassUtils.getDefaultClassLoader());
 	}
 
@@ -129,6 +132,7 @@ public class DefaultResourceLoader implements ResourceLoader {
 	 */
 	@SuppressWarnings("unchecked")
 	public <T> Map<Resource, T> getResourceCache(Class<T> valueType) {
+		// 从缓存中获取资源，获取不到则进行放置
 		return (Map<Resource, T>) this.resourceCaches.computeIfAbsent(valueType, key -> new ConcurrentHashMap<>());
 	}
 
@@ -147,18 +151,22 @@ public class DefaultResourceLoader implements ResourceLoader {
 		Assert.notNull(location, "Location must not be null");
 
 		for (ProtocolResolver protocolResolver : getProtocolResolvers()) {
+			//TODO 协议解析成资源
 			Resource resource = protocolResolver.resolve(location, this);
 			if (resource != null) {
 				return resource;
 			}
 		}
 
+		// 按路径解析
 		if (location.startsWith("/")) {
 			return getResourceByPath(location);
 		}
+		// 按类路径解析
 		else if (location.startsWith(CLASSPATH_URL_PREFIX)) {
 			return new ClassPathResource(location.substring(CLASSPATH_URL_PREFIX.length()), getClassLoader());
 		}
+		// 按URL解析
 		else {
 			try {
 				// Try to parse the location as a URL...

@@ -69,6 +69,7 @@ public interface ResourcePatternResolver extends ResourceLoader {
 	 */
 	String CLASSPATH_ALL_URL_PREFIX = "classpath*:";
 
+	// 获取资源集合
 	/**
 	 * Resolve the given location pattern into {@code Resource} objects.
 	 * <p>Overlapping resource entries that point to the same physical
