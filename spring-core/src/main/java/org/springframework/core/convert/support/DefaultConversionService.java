@@ -41,7 +41,7 @@ import org.springframework.lang.Nullable;
 public class DefaultConversionService extends GenericConversionService {
 
 	@Nullable
-	private static volatile DefaultConversionService sharedInstance;
+	private static volatile DefaultConversionService sharedInstance;//共享实例
 
 
 	/**
@@ -65,6 +65,7 @@ public class DefaultConversionService extends GenericConversionService {
 	 * @since 4.3.5
 	 */
 	public static ConversionService getSharedInstance() {
+		// 享元模式
 		DefaultConversionService cs = sharedInstance;
 		if (cs == null) {
 			synchronized (DefaultConversionService.class) {
@@ -127,16 +128,17 @@ public class DefaultConversionService extends GenericConversionService {
 
 		converterRegistry.addConverter(new CollectionToObjectConverter(conversionService));
 		converterRegistry.addConverter(new ObjectToCollectionConverter(conversionService));
-
 		converterRegistry.addConverter(new StreamConverter(conversionService));
 	}
 
 	private static void addScalarConverters(ConverterRegistry converterRegistry) {
+		// 数字转数字工厂
 		converterRegistry.addConverterFactory(new NumberToNumberConverterFactory());
-
+		// 字符串转数字工厂
 		converterRegistry.addConverterFactory(new StringToNumberConverterFactory());
+		// 对象转字符串
 		converterRegistry.addConverter(Number.class, String.class, new ObjectToStringConverter());
-
+		// 字符串转字符
 		converterRegistry.addConverter(new StringToCharacterConverter());
 		converterRegistry.addConverter(Character.class, String.class, new ObjectToStringConverter());
 

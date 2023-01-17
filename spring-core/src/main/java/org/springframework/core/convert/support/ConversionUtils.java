@@ -33,11 +33,20 @@ import org.springframework.util.ClassUtils;
  */
 abstract class ConversionUtils {
 
+	/**
+	 * 模板方法,委托模式实现转换
+	 * @param converter
+	 * @param source
+	 * @param sourceType
+	 * @param targetType
+	 * @return
+	 */
 	@Nullable
 	public static Object invokeConverter(GenericConverter converter, @Nullable Object source,
 			TypeDescriptor sourceType, TypeDescriptor targetType) {
 
 		try {
+			// 调用转换器进行转换
 			return converter.convert(source, sourceType, targetType);
 		}
 		catch (ConversionFailedException ex) {
@@ -59,6 +68,7 @@ abstract class ConversionUtils {
 			// maybe
 			return true;
 		}
+		//
 		if (conversionService.canConvert(sourceElementType, targetElementType)) {
 			// yes
 			return true;

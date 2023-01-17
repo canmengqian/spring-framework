@@ -17,6 +17,7 @@
 package org.springframework.core.convert.converter;
 
 /**
+ * 转换注册器,用于注册转换器和删除转换器
  * For registering converters with a type conversion system.
  *
  * @author Keith Donald

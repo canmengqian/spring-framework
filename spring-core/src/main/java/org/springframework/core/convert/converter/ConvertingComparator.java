@@ -75,6 +75,9 @@ public class ConvertingComparator<S, T> implements Comparator<S> {
 	}
 
 
+	/*
+		比较转换结果是否相同
+	 */
 	@Override
 	public int compare(S o1, S o2) {
 		T c1 = this.converter.convert(o1);
@@ -103,7 +106,9 @@ public class ConvertingComparator<S, T> implements Comparator<S> {
 	}
 
 
+
 	/**
+	 * 多对多转换器
 	 * Adapts a {@link ConversionService} and {@code targetType} to a {@link Converter}.
 	 */
 	private static class ConversionServiceConverter<S, T> implements Converter<S, T> {

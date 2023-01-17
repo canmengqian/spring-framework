@@ -74,17 +74,21 @@ public class GenericConversionService implements ConfigurableConversionService {
 	 */
 	private static final GenericConverter NO_MATCH = new NoOpConverter("NO_MATCH");
 
-
+	// 转换容器
 	private final Converters converters = new Converters();
 
+	// 转换器缓存
 	private final Map<ConverterCacheKey, GenericConverter> converterCache = new ConcurrentReferenceHashMap<>(64);
 
 
 	// ConverterRegistry implementation
 
+	// 添加转换器到转换容器中
 	@Override
 	public void addConverter(Converter<?, ?> converter) {
+		// 获取可解析的类型
 		ResolvableType[] typeInfo = getRequiredTypeInfo(converter.getClass(), Converter.class);
+		// 是否代理类
 		if (typeInfo == null && converter instanceof DecoratingProxy decoratingProxy) {
 			typeInfo = getRequiredTypeInfo(decoratingProxy.getDecoratedClass(), Converter.class);
 		}
@@ -104,6 +108,7 @@ public class GenericConversionService implements ConfigurableConversionService {
 	@Override
 	public void addConverter(GenericConverter converter) {
 		this.converters.add(converter);
+		// 清理转换器缓存
 		invalidateCache();
 	}
 
@@ -287,7 +292,7 @@ public class GenericConversionService implements ConfigurableConversionService {
 
 
 	// Internal helpers
-
+	// 获取源和目标类型
 	@Nullable
 	private ResolvableType[] getRequiredTypeInfo(Class<?> converterClass, Class<?> genericIfc) {
 		ResolvableType resolvableType = ResolvableType.forClass(converterClass).as(genericIfc);
@@ -339,14 +344,15 @@ public class GenericConversionService implements ConfigurableConversionService {
 
 
 	/**
+	 * 转换器适配器
 	 * Adapts a {@link Converter} to a {@link GenericConverter}.
 	 */
 	@SuppressWarnings("unchecked")
 	private final class ConverterAdapter implements ConditionalGenericConverter {
 
-		private final Converter<Object, Object> converter;
+		private final Converter<Object, Object> converter;//转换器
 
-		private final ConvertiblePair typeInfo;
+		private final ConvertiblePair typeInfo;// 转换关系对
 
 		private final ResolvableType targetType;
 
@@ -363,7 +369,7 @@ public class GenericConversionService implements ConfigurableConversionService {
 
 		@Override
 		public boolean matches(TypeDescriptor sourceType, TypeDescriptor targetType) {
-			// Check raw type first...
+			// Check raw type first... 目标类型不相等
 			if (this.typeInfo.getTargetType() != targetType.getObjectType()) {
 				return false;
 			}
@@ -445,12 +451,13 @@ public class GenericConversionService implements ConfigurableConversionService {
 
 
 	/**
+	 * 转换器缓存key
 	 * Key for use with the converter cache.
 	 */
 	private static final class ConverterCacheKey implements Comparable<ConverterCacheKey> {
-
+		// 原类型
 		private final TypeDescriptor sourceType;
-
+		//目标类型
 		private final TypeDescriptor targetType;
 
 		public ConverterCacheKey(TypeDescriptor sourceType, TypeDescriptor targetType) {
@@ -495,22 +502,26 @@ public class GenericConversionService implements ConfigurableConversionService {
 
 
 	/**
+	 * 用于管理已注册的转换器
 	 * Manages all converters registered with the service.
 	 */
 	private static class Converters {
-
+		// 全局转换器
 		private final Set<GenericConverter> globalConverters = new CopyOnWriteArraySet<>();
-
+		// 转换对-> 转换器队列映射缓存
 		private final Map<ConvertiblePair, ConvertersForPair> converters = new ConcurrentHashMap<>(256);
 
 		public void add(GenericConverter converter) {
+			// 可以转换的关系对
 			Set<ConvertiblePair> convertibleTypes = converter.getConvertibleTypes();
 			if (convertibleTypes == null) {
+				// 条件转换器
 				Assert.state(converter instanceof ConditionalConverter,
 						"Only conditional converters may return null convertible types");
 				this.globalConverters.add(converter);
 			}
 			else {
+				// 转换对-> 转换器队列映射
 				for (ConvertiblePair convertiblePair : convertibleTypes) {
 					getMatchableConverters(convertiblePair).add(converter);
 				}
@@ -518,6 +529,7 @@ public class GenericConversionService implements ConfigurableConversionService {
 		}
 
 		private ConvertersForPair getMatchableConverters(ConvertiblePair convertiblePair) {
+			// 无转换队列则新生成
 			return this.converters.computeIfAbsent(convertiblePair, k -> new ConvertersForPair());
 		}
 
@@ -646,10 +658,12 @@ public class GenericConversionService implements ConfigurableConversionService {
 
 
 	/**
+	 * 管理使用特定 {@link ConvertiblePair} 注册的转换器。
 	 * Manages converters registered with a specific {@link ConvertiblePair}.
 	 */
 	private static class ConvertersForPair {
 
+		// 通用转换器队列
 		private final Deque<GenericConverter> converters = new ConcurrentLinkedDeque<>();
 
 		public void add(GenericConverter converter) {
@@ -658,6 +672,7 @@ public class GenericConversionService implements ConfigurableConversionService {
 
 		@Nullable
 		public GenericConverter getConverter(TypeDescriptor sourceType, TypeDescriptor targetType) {
+			// 遍历转换器，如果实例相等则返回此转换器
 			for (GenericConverter converter : this.converters) {
 				if (!(converter instanceof ConditionalGenericConverter genericConverter) ||
 						genericConverter.matches(sourceType, targetType)) {
@@ -675,6 +690,7 @@ public class GenericConversionService implements ConfigurableConversionService {
 
 
 	/**
+	 * 不作任何转换
 	 * Internal converter that performs no operation.
 	 */
 	private static class NoOpConverter implements GenericConverter {

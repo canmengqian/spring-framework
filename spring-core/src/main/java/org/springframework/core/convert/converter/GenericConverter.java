@@ -71,9 +71,9 @@ public interface GenericConverter {
 	 * Holder for a source-to-target class pair.
 	 */
 	final class ConvertiblePair {
-
+		// 原类型
 		private final Class<?> sourceType;
-
+		// 目标类型
 		private final Class<?> targetType;
 
 		/**
