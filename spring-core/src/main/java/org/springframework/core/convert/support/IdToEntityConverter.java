@@ -91,6 +91,13 @@ final class IdToEntityConverter implements ConditionalGenericConverter {
 			localOnlyFiltered = false;
 		}
 		for (Method method : methods) {
+			/*
+			1. 必须静态方法
+			2. 名称相等
+			3. 参数个数为1个
+			4. 返回类型为实体类
+			5.方法所在的类==目标类
+			 */
 			if (Modifier.isStatic(method.getModifiers()) && method.getName().equals(finderMethod) &&
 					method.getParameterCount() == 1 && method.getReturnType().equals(entityClass) &&
 					(localOnlyFiltered || method.getDeclaringClass().equals(entityClass))) {

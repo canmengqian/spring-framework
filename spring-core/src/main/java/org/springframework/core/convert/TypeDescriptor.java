@@ -36,6 +36,7 @@ import org.springframework.util.ClassUtils;
 import org.springframework.util.ObjectUtils;
 
 /**
+ * 1. 可以根据MethodParameter ,Field,Property进行实例化
  * Contextual descriptor about a type to convert from or to.
  * <p>Capable of representing arrays and generic collection types.
  *
@@ -54,8 +55,10 @@ public class TypeDescriptor implements Serializable {
 
 	private static final Annotation[] EMPTY_ANNOTATION_ARRAY = new Annotation[0];
 
+	// 基础类型->类型描述符映射
 	private static final Map<Class<?>, TypeDescriptor> commonTypesCache = new HashMap<>(32);
 
+	//基本数据类型
 	private static final Class<?>[] CACHED_COMMON_TYPES = {
 			boolean.class, Boolean.class, byte.class, Byte.class, char.class, Character.class,
 			double.class, Double.class, float.class, Float.class, int.class, Integer.class,
@@ -70,6 +73,7 @@ public class TypeDescriptor implements Serializable {
 
 	private final Class<?> type;
 
+	// 可解析类型
 	private final ResolvableType resolvableType;
 
 	private final AnnotatedElementAdapter annotatedElement;
@@ -130,12 +134,14 @@ public class TypeDescriptor implements Serializable {
 
 
 	/**
+	 * 是原始类型则从缓存中获取原始类型的class
 	 * Variation of {@link #getType()} that accounts for a primitive type by
 	 * returning its object wrapper type.
 	 * <p>This is useful for conversion service implementations that wish to
 	 * normalize to object-based types and not work with primitive types directly.
 	 */
 	public Class<?> getObjectType() {
+		// 是原始类型则从缓存中获取原始类型的class
 		return ClassUtils.resolvePrimitiveIfNecessary(getType());
 	}
 
@@ -190,6 +196,7 @@ public class TypeDescriptor implements Serializable {
 		if (value == null) {
 			return this;
 		}
+		// 获取窄类型
 		ResolvableType narrowed = ResolvableType.forType(value.getClass(), getResolvableType());
 		return new TypeDescriptor(narrowed, value.getClass(), getAnnotations());
 	}
@@ -208,6 +215,7 @@ public class TypeDescriptor implements Serializable {
 			return null;
 		}
 		Assert.isAssignable(superType, getType());
+		// TODO
 		return new TypeDescriptor(getResolvableType().as(superType), superType, getAnnotations());
 	}
 
@@ -246,6 +254,7 @@ public class TypeDescriptor implements Serializable {
 			// to return a copy of the array, whereas we can do it more efficiently here.
 			return false;
 		}
+
 		return AnnotatedElementUtils.isAnnotated(this.annotatedElement, annotationType);
 	}
 
@@ -280,16 +289,20 @@ public class TypeDescriptor implements Serializable {
 	 * @see #getObjectType()
 	 */
 	public boolean isAssignableTo(TypeDescriptor typeDescriptor) {
+		// 类型描述器中的类型是否来源于当前类型
 		boolean typesAssignable = typeDescriptor.getObjectType().isAssignableFrom(getObjectType());
 		if (!typesAssignable) {
 			return false;
 		}
+		// 数组类型判断
 		if (isArray() && typeDescriptor.isArray()) {
 			return isNestedAssignable(getElementTypeDescriptor(), typeDescriptor.getElementTypeDescriptor());
 		}
+		// 集合类型判断
 		else if (isCollection() && typeDescriptor.isCollection()) {
 			return isNestedAssignable(getElementTypeDescriptor(), typeDescriptor.getElementTypeDescriptor());
 		}
+		// Map类型判断
 		else if (isMap() && typeDescriptor.isMap()) {
 			return isNestedAssignable(getMapKeyTypeDescriptor(), typeDescriptor.getMapKeyTypeDescriptor()) &&
 				isNestedAssignable(getMapValueTypeDescriptor(), typeDescriptor.getMapValueTypeDescriptor());
@@ -299,6 +312,9 @@ public class TypeDescriptor implements Serializable {
 		}
 	}
 
+	/*
+		类型迭代比对
+	 */
 	private boolean isNestedAssignable(@Nullable TypeDescriptor nestedTypeDescriptor,
 			@Nullable TypeDescriptor otherNestedTypeDescriptor) {
 

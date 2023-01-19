@@ -38,9 +38,9 @@ import org.springframework.util.ObjectUtils;
  */
 final class ArrayToArrayConverter implements ConditionalGenericConverter {
 
-	private final CollectionToArrayConverter helperConverter;
+	private final CollectionToArrayConverter helperConverter;//集合转数组转换器
 
-	private final ConversionService conversionService;
+	private final ConversionService conversionService;//转换服务
 
 
 	public ArrayToArrayConverter(ConversionService conversionService) {
@@ -51,6 +51,7 @@ final class ArrayToArrayConverter implements ConditionalGenericConverter {
 
 	@Override
 	public Set<ConvertiblePair> getConvertibleTypes() {
+		// 生成转换对
 		return Collections.singleton(new ConvertiblePair(Object[].class, Object[].class));
 	}
 
@@ -69,7 +70,9 @@ final class ArrayToArrayConverter implements ConditionalGenericConverter {
 				return source;
 			}
 		}
+		// 转成对象数组后再转为对象列表
 		List<Object> sourceList = Arrays.asList(ObjectUtils.toObjectArray(source));
+		// 委托进行转换
 		return this.helperConverter.convert(sourceList, sourceType, targetType);
 	}
 

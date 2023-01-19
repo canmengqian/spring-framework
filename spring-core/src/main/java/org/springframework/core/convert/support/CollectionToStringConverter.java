@@ -66,6 +66,7 @@ final class CollectionToStringConverter implements ConditionalGenericConverter {
 			return "";
 		}
 		StringJoiner sj = new StringJoiner(DELIMITER);
+		// 循环转换
 		for (Object sourceElement : sourceCollection) {
 			Object targetElement = this.conversionService.convert(
 					sourceElement, sourceType.elementTypeDescriptor(sourceElement), targetType);

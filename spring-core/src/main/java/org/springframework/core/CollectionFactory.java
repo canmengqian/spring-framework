@@ -87,6 +87,7 @@ public final class CollectionFactory {
 
 
 	/**
+	 * 是否存在 参数与自有类型最接近的类型
 	 * Determine whether the given collection type is an <em>approximable</em> type,
 	 * i.e. a type that {@link #createApproximateCollection} can approximate.
 	 * @param collectionType the collection type to check
@@ -96,7 +97,7 @@ public final class CollectionFactory {
 		return (collectionType != null && approximableCollectionTypes.contains(collectionType));
 	}
 
-	/**
+	/** 创建最接近的集合类型
 	 * Create the most approximate collection for the given collection.
 	 * <p><strong>Warning</strong>: Since the parameterized type {@code E} is
 	 * not bound to the type of elements contained in the supplied
@@ -118,9 +119,11 @@ public final class CollectionFactory {
 	 */
 	@SuppressWarnings({"rawtypes", "unchecked"})
 	public static <E> Collection<E> createApproximateCollection(@Nullable Object collection, int capacity) {
+		//基于链表实现的列表
 		if (collection instanceof LinkedList) {
 			return new LinkedList<>();
 		}
+		//基于数组实现的列表
 		else if (collection instanceof List) {
 			return new ArrayList<>(capacity);
 		}
@@ -129,6 +132,7 @@ public final class CollectionFactory {
 			copy.clear();
 			return copy;
 		}
+		//基于有序集合,默认TreeSet
 		else if (collection instanceof SortedSet sortedSet) {
 			return new TreeSet<>(sortedSet.comparator());
 		}
@@ -177,6 +181,7 @@ public final class CollectionFactory {
 	@SuppressWarnings("unchecked")
 	public static <E> Collection<E> createCollection(Class<?> collectionType, @Nullable Class<?> elementType, int capacity) {
 		Assert.notNull(collectionType, "Collection type must not be null");
+		//集合都采用 LinkedHashSet
 		if (LinkedHashSet.class == collectionType || HashSet.class == collectionType ||
 				Set.class == collectionType || Collection.class == collectionType) {
 			return new LinkedHashSet<>(capacity);
@@ -210,6 +215,7 @@ public final class CollectionFactory {
 	}
 
 	/**
+	 * 最接近的map类型
 	 * Determine whether the given map type is an <em>approximable</em> type,
 	 * i.e. a type that {@link #createApproximateMap} can approximate.
 	 * @param mapType the map type to check

@@ -35,7 +35,7 @@ import org.springframework.util.ObjectUtils;
  * @since 3.0
  */
 final class ArrayToStringConverter implements ConditionalGenericConverter {
-
+		//CollectionToStringConverter进行委托
 	private final CollectionToStringConverter helperConverter;
 
 

@@ -55,6 +55,7 @@ final class CollectionToObjectConverter implements ConditionalGenericConverter {
 		if (source == null) {
 			return null;
 		}
+		// 由target分配给source的类型
 		if (sourceType.isAssignableTo(targetType)) {
 			return source;
 		}
@@ -62,6 +63,7 @@ final class CollectionToObjectConverter implements ConditionalGenericConverter {
 		if (sourceCollection.isEmpty()) {
 			return null;
 		}
+		//首个元素转对象
 		Object firstElement = sourceCollection.iterator().next();
 		return this.conversionService.convert(firstElement, sourceType.elementTypeDescriptor(firstElement), targetType);
 	}

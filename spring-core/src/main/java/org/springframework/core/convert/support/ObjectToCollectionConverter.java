@@ -51,6 +51,7 @@ final class ObjectToCollectionConverter implements ConditionalGenericConverter {
 
 	@Override
 	public boolean matches(TypeDescriptor sourceType, TypeDescriptor targetType) {
+		// TODO
 		return ConversionUtils.canConvertElements(sourceType, targetType.getElementTypeDescriptor(), this.conversionService);
 	}
 
@@ -61,7 +62,9 @@ final class ObjectToCollectionConverter implements ConditionalGenericConverter {
 			return null;
 		}
 
+		//目标对象类型描述符
 		TypeDescriptor elementDesc = targetType.getElementTypeDescriptor();
+		// 通过集合工厂创建集合
 		Collection<Object> target = CollectionFactory.createCollection(targetType.getType(),
 				(elementDesc != null ? elementDesc.getType() : null), 1);
 

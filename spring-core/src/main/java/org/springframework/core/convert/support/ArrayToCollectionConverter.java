@@ -69,6 +69,7 @@ final class ArrayToCollectionConverter implements ConditionalGenericConverter {
 
 		int length = Array.getLength(source);
 		TypeDescriptor elementDesc = targetType.getElementTypeDescriptor();
+		// 生成目标集合
 		Collection<Object> target = CollectionFactory.createCollection(targetType.getType(),
 				(elementDesc != null ? elementDesc.getType() : null), length);
 

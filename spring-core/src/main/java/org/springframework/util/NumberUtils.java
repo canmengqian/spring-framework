@@ -41,6 +41,7 @@ public abstract class NumberUtils {
 	private static final BigInteger LONG_MAX = BigInteger.valueOf(Long.MAX_VALUE);
 
 	/**
+	 * 标准数字类型
 	 * Standard number types (all immutable):
 	 * Byte, Short, Integer, Long, BigInteger, Float, Double, BigDecimal.
 	 */
@@ -76,24 +77,29 @@ public abstract class NumberUtils {
 
 		Assert.notNull(number, "Number must not be null");
 		Assert.notNull(targetClass, "Target class must not be null");
-
+		// number属于targetClass的实例
 		if (targetClass.isInstance(number)) {
 			return (T) number;
 		}
 		else if (Byte.class == targetClass) {
+			// long上下界检查
 			long value = checkedLongValue(number, targetClass);
+			// byte溢出检查
 			if (value < Byte.MIN_VALUE || value > Byte.MAX_VALUE) {
 				raiseOverflowException(number, targetClass);
 			}
 			return (T) Byte.valueOf(number.byteValue());
 		}
 		else if (Short.class == targetClass) {
+			// long上下界检查
 			long value = checkedLongValue(number, targetClass);
+			// short溢出检查
 			if (value < Short.MIN_VALUE || value > Short.MAX_VALUE) {
 				raiseOverflowException(number, targetClass);
 			}
 			return (T) Short.valueOf(number.shortValue());
 		}
+		// 整形判断
 		else if (Integer.class == targetClass) {
 			long value = checkedLongValue(number, targetClass);
 			if (value < Integer.MIN_VALUE || value > Integer.MAX_VALUE) {
@@ -101,10 +107,12 @@ public abstract class NumberUtils {
 			}
 			return (T) Integer.valueOf(number.intValue());
 		}
+		// 长整型判断
 		else if (Long.class == targetClass) {
 			long value = checkedLongValue(number, targetClass);
 			return (T) Long.valueOf(value);
 		}
+		// 大整数
 		else if (BigInteger.class == targetClass) {
 			if (number instanceof BigDecimal bigDecimal) {
 				// do not lose precision - use BigDecimal's own conversion
@@ -126,6 +134,7 @@ public abstract class NumberUtils {
 			// (see BigDecimal javadoc for details)
 			return (T) new BigDecimal(number.toString());
 		}
+		// 非标准数字类型
 		else {
 			throw new IllegalArgumentException("Could not convert number [" + number + "] of type [" +
 					number.getClass().getName() + "] to unsupported target class [" + targetClass.getName() + "]");
@@ -191,6 +200,7 @@ public abstract class NumberUtils {
 	public static <T extends Number> T parseNumber(String text, Class<T> targetClass) {
 		Assert.notNull(text, "Text must not be null");
 		Assert.notNull(targetClass, "Target class must not be null");
+		// 去除所有的空格
 		String trimmed = StringUtils.trimAllWhitespace(text);
 
 		if (Byte.class == targetClass) {

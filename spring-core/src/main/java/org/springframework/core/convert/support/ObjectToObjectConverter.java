@@ -96,11 +96,14 @@ final class ObjectToObjectConverter implements ConditionalGenericConverter {
 		}
 		Class<?> sourceClass = sourceType.getType();
 		Class<?> targetClass = targetType.getType();
+		// 获取验证过的执行接口
 		Executable executable = getValidatedExecutable(targetClass, sourceClass);
 
 		try {
+			// 属于方法则设置权限并调用方法
 			if (executable instanceof Method method) {
 				ReflectionUtils.makeAccessible(method);
+				// 非静态方法执行方法调用
 				if (!Modifier.isStatic(method.getModifiers())) {
 					return method.invoke(source);
 				}
@@ -108,6 +111,7 @@ final class ObjectToObjectConverter implements ConditionalGenericConverter {
 					return method.invoke(null, source);
 				}
 			}
+			// 构造器则进行实例化
 			else if (executable instanceof Constructor<?> constructor) {
 				ReflectionUtils.makeAccessible(constructor);
 				return constructor.newInstance(source);

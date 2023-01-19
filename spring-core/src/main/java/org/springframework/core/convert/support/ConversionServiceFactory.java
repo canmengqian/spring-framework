@@ -48,12 +48,15 @@ public final class ConversionServiceFactory {
 	public static void registerConverters(@Nullable Set<?> converters, ConverterRegistry registry) {
 		if (converters != null) {
 			for (Object candidate : converters) {
+				// 实例是否为 GenericConverter
 				if (candidate instanceof GenericConverter genericConverter) {
 					registry.addConverter(genericConverter);
 				}
+				// 是否是转换器
 				else if (candidate instanceof Converter<?, ?> converter) {
 					registry.addConverter(converter);
 				}
+				//  是否是转换工厂
 				else if (candidate instanceof ConverterFactory<?, ?> converterFactory) {
 					registry.addConverterFactory(converterFactory);
 				}

@@ -124,6 +124,7 @@ public class ResolvableType implements Serializable {
 	@Nullable
 	private Class<?> resolved;
 
+	// TODO 这些ResolvableType区别在哪里
 	@Nullable
 	private volatile ResolvableType superType;
 
@@ -162,6 +163,7 @@ public class ResolvableType implements Serializable {
 		this.variableResolver = variableResolver;
 		this.componentType = null;
 		this.hash = hash;
+		// 根据type解析出class
 		this.resolved = resolveClass();
 	}
 
@@ -212,6 +214,7 @@ public class ResolvableType implements Serializable {
 			return this.resolved;
 		}
 		Type rawType = this.type;
+		// 获取参数化类型的原始类型
 		if (rawType instanceof ParameterizedType parameterizedType) {
 			rawType = parameterizedType.getRawType();
 		}
@@ -225,6 +228,7 @@ public class ResolvableType implements Serializable {
 	 * information or meta-data that alternative JVM languages may provide.
 	 */
 	public Object getSource() {
+		// 获取方法,字段类型等实例
 		Object source = (this.typeProvider != null ? this.typeProvider.getSource() : null);
 		return (source != null ? source : this.type);
 	}
@@ -259,6 +263,7 @@ public class ResolvableType implements Serializable {
 	 * @see #isAssignableFrom(ResolvableType)
 	 */
 	public boolean isAssignableFrom(Class<?> other) {
+		// 1.先new出一个ResolvableType
 		return isAssignableFrom(forClass(other), null);
 	}
 
@@ -314,7 +319,7 @@ public class ResolvableType implements Serializable {
 		boolean checkGenerics = true;
 		Class<?> ourResolved = null;
 		if (this.type instanceof TypeVariable<?> variable) {
-			// Try default variable resolution
+			//变量类型双重解析 Try default variable resolution
 			if (this.variableResolver != null) {
 				ResolvableType resolved = this.variableResolver.resolveVariable(variable);
 				if (resolved != null) {
@@ -336,6 +341,7 @@ public class ResolvableType implements Serializable {
 				exactMatch = false;
 			}
 		}
+		// 按照Object来解析
 		if (ourResolved == null) {
 			ourResolved = resolve(Object.class);
 		}
@@ -1590,7 +1596,7 @@ public class ResolvableType implements Serializable {
 	private static class WildcardBounds {
 
 		private final Kind kind;
-
+		// 边界类型集合
 		private final ResolvableType[] bounds;
 
 		/**
