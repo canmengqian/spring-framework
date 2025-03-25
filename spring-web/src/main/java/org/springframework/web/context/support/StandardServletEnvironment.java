@@ -46,10 +46,14 @@ import org.springframework.web.context.ConfigurableWebEnvironment;
  */
 public class StandardServletEnvironment extends StandardEnvironment implements ConfigurableWebEnvironment {
 
-	/** Servlet context init parameters property source name: {@value}. */
+	/**
+	 * 上下文初始化参数 有什么作用
+	 *  Servlet context init parameters property source name: {@value}. */
 	public static final String SERVLET_CONTEXT_PROPERTY_SOURCE_NAME = "servletContextInitParams";
 
-	/** Servlet config init parameters property source name: {@value}. */
+	/**
+	 * Servlet 初始化参数
+	 * Servlet config init parameters property source name: {@value}. */
 	public static final String SERVLET_CONFIG_PROPERTY_SOURCE_NAME = "servletConfigInitParams";
 
 	/** JNDI property source name: {@value}. */
@@ -117,6 +121,7 @@ public class StandardServletEnvironment extends StandardEnvironment implements C
 
 	@Override
 	public void initPropertySources(@Nullable ServletContext servletContext, @Nullable ServletConfig servletConfig) {
+		//委托WebApplicationContextUtils 实现
 		WebApplicationContextUtils.initServletPropertySources(getPropertySources(), servletContext, servletConfig);
 	}
 

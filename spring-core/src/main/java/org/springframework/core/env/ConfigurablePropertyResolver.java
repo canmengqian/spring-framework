@@ -20,6 +20,8 @@ import org.springframework.core.convert.support.ConfigurableConversionService;
 import org.springframework.lang.Nullable;
 
 /**
+ * 1. 声明获取和设置转换服务
+ * 2. 设置属性的前缀,后缀，分隔符号。
  * Configuration interface to be implemented by most if not all {@link PropertyResolver}
  * types. Provides facilities for accessing and customizing the
  * {@link org.springframework.core.convert.ConversionService ConversionService}

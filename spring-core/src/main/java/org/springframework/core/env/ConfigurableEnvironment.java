@@ -19,6 +19,8 @@ package org.springframework.core.env;
 import java.util.Map;
 
 /**
+ * 1. 设置活跃的配置环境
+ * 2. 合并指定的应用运行环境
  * Configuration interface to be implemented by most if not all {@link Environment} types.
  * Provides facilities for setting active and default profiles and manipulating underlying
  * property sources. Allows clients to set and validate required properties, customize the

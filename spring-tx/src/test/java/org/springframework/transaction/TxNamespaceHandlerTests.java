@@ -86,9 +86,12 @@ public class TxNamespaceHandlerTests {
 
 	@Test
 	public void rollbackRules() {
+		// 获取事务拦截器
 		TransactionInterceptor txInterceptor = (TransactionInterceptor) context.getBean("txRollbackAdvice");
+		// 事务属性
 		TransactionAttributeSource txAttrSource = txInterceptor.getTransactionAttributeSource();
 		TransactionAttribute txAttr = txAttrSource.getTransactionAttribute(getAgeMethod,ITestBean.class);
+		// 回滚异常
 		assertThat(txAttr.rollbackOn(new Exception())).as("should be configured to rollback on Exception").isTrue();
 
 		txAttr = txAttrSource.getTransactionAttribute(setAgeMethod, ITestBean.class);

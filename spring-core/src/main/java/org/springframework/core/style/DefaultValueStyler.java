@@ -41,6 +41,7 @@ import org.springframework.util.ObjectUtils;
  */
 public class DefaultValueStyler implements ValueStyler {
 
+	// 定义了collection,set,list,map等字面含义
 	private static final String EMPTY = "[[empty]]";
 	private static final String NULL = "[null]";
 	private static final String COLLECTION = "collection";
@@ -60,11 +61,14 @@ public class DefaultValueStyler implements ValueStyler {
 			return styleString(str);
 		}
 		else if (value instanceof Class<?> clazz) {
+			// 委托给classUtil
 			return styleClass(clazz);
 		}
+		//ClassUtils
 		else if (value instanceof Method method) {
 			return styleMethod(method);
 		}
+
 		else if (value instanceof Map<?, ?> map) {
 			return styleMap(map);
 		}
@@ -137,6 +141,7 @@ public class DefaultValueStyler implements ValueStyler {
 		}
 
 		StringJoiner result = new StringJoiner(", ", "[", "]");
+		// 遍历entry生成描述符
 		for (Map.Entry<K, V> entry : map.entrySet()) {
 			result.add(styleMapEntry(entry));
 		}
@@ -149,6 +154,7 @@ public class DefaultValueStyler implements ValueStyler {
 	 * @since 6.0
 	 */
 	protected String styleMapEntry(Map.Entry<?, ?> entry) {
+		// 迭代
 		return style(entry.getKey()) + " -> " + style(entry.getValue());
 	}
 
@@ -166,6 +172,7 @@ public class DefaultValueStyler implements ValueStyler {
 
 		StringJoiner result = new StringJoiner(", ", "[", "]");
 		for (Object element : collection) {
+			// 迭代
 			result.add(style(element));
 		}
 		return collectionType + result;

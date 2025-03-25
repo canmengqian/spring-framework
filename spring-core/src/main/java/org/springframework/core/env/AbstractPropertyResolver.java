@@ -33,6 +33,8 @@ import org.springframework.util.PropertyPlaceholderHelper;
 import org.springframework.util.SystemPropertyUtils;
 
 /**
+ * 1. 实例化转换服务
+ * 2. 实现了父类接口所有的方法
  * Abstract base class for resolving properties against any underlying source.
  *
  * @author Chris Beams

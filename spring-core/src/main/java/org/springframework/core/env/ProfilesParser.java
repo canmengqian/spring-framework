@@ -71,10 +71,12 @@ final class ProfilesParser {
 			}
 			switch (token) {
 				case "(" -> {
+					// 迭代计算
 					Profiles contents = parseTokens(expression, tokens, Context.BRACKET);
 					if (context == Context.INVERT) {
 						return contents;
 					}
+					// 解析完成,添加配置项
 					elements.add(contents);
 				}
 				case "&" -> {

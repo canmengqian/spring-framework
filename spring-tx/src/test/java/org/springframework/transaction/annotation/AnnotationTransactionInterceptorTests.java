@@ -43,19 +43,26 @@ import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
  */
 public class AnnotationTransactionInterceptorTests {
 
+	// 事务管理器
 	private final CallCountingTransactionManager ptm = new CallCountingTransactionManager();
 
 	private final ReactiveCallCountingTransactionManager rtm = new ReactiveCallCountingTransactionManager();
 
+	// 注解属性解析器
 	private final AnnotationTransactionAttributeSource source = new AnnotationTransactionAttributeSource();
 
+	// 事务拦截器
 	private final TransactionInterceptor ti = new TransactionInterceptor((TransactionManager) this.ptm, this.source);
 
 
+	/**
+	 * 测试类级事务注解
+	 */
 	@Test
 	public void classLevelOnly() {
 		ProxyFactory proxyFactory = new ProxyFactory();
 		proxyFactory.setTarget(new TestClassLevelOnly());
+		// 设置拦截器
 		proxyFactory.addAdvice(this.ti);
 
 		TestClassLevelOnly proxy = (TestClassLevelOnly) proxyFactory.getProxy();
@@ -73,6 +80,9 @@ public class AnnotationTransactionInterceptorTests {
 		assertGetTransactionAndCommitCount(4);
 	}
 
+	/**
+	 * 测试注解在方法上,优先使用方法级别的事务注解
+	 */
 	@Test
 	public void withSingleMethodOverride() {
 		ProxyFactory proxyFactory = new ProxyFactory();
@@ -93,7 +103,9 @@ public class AnnotationTransactionInterceptorTests {
 		proxy.doSomething();
 		assertGetTransactionAndCommitCount(4);
 	}
-
+	/**
+	 * 测试注解在一个方法上,优先使用方法级别的事务注解
+	 */
 	@Test
 	public void withSingleMethodOverrideInverted() {
 		ProxyFactory proxyFactory = new ProxyFactory();
@@ -114,7 +126,9 @@ public class AnnotationTransactionInterceptorTests {
 		proxy.doSomething();
 		assertGetTransactionAndCommitCount(4);
 	}
-
+	/**
+	 * 测试注解在多个方法上,优先使用方法级别的事务注解
+	 */
 	@Test
 	public void withMultiMethodOverride() {
 		ProxyFactory proxyFactory = new ProxyFactory();
@@ -136,6 +150,9 @@ public class AnnotationTransactionInterceptorTests {
 		assertGetTransactionAndCommitCount(4);
 	}
 
+	/**
+	 * 测试非受检异常会进行事务回滚
+	 */
 	@Test
 	public void withRollbackOnRuntimeException() {
 		ProxyFactory proxyFactory = new ProxyFactory();
@@ -143,6 +160,7 @@ public class AnnotationTransactionInterceptorTests {
 		proxyFactory.addAdvice(this.ti);
 
 		TestWithExceptions proxy = (TestWithExceptions) proxyFactory.getProxy();
+
 
 		assertThatIllegalStateException().isThrownBy(
 				proxy::doSomethingErroneous)
@@ -152,7 +170,9 @@ public class AnnotationTransactionInterceptorTests {
 				proxy::doSomethingElseErroneous)
 			.satisfies(ex -> assertGetTransactionAndRollbackCount(2));
 	}
-
+	/**
+	 * 测试受检异常会进行事务提交
+	 */
 	@Test
 	public void withCommitOnCheckedException() {
 		ProxyFactory proxyFactory = new ProxyFactory();
@@ -166,6 +186,9 @@ public class AnnotationTransactionInterceptorTests {
 			.satisfies(ex -> assertGetTransactionAndCommitCount(1));
 	}
 
+	/**
+	 * 显示指定了受检异常，则会回滚事务
+	 */
 	@Test
 	public void withRollbackOnCheckedExceptionAndRollbackRule() {
 		ProxyFactory proxyFactory = new ProxyFactory();
@@ -178,7 +201,7 @@ public class AnnotationTransactionInterceptorTests {
 			.isThrownBy(proxy::doSomethingElseWithCheckedExceptionAndRollbackRule)
 			.satisfies(ex -> assertGetTransactionAndRollbackCount(1));
 	}
-
+// TODO 响应式事务=========================================================================
 	@Test
 	public void withMonoSuccess() {
 		ProxyFactory proxyFactory = new ProxyFactory();
@@ -250,7 +273,14 @@ public class AnnotationTransactionInterceptorTests {
 		StepVerifier.withVirtualTime(proxy::fluxSuccess).thenAwait(Duration.ofSeconds(1)).thenCancel().verify();
 		assertReactiveGetTransactionAndRollbackCount(1);
 	}
+	// TODO vavr处理=========================================================================
 
+	/**
+	 * 1.Try.success 成功提交
+	 * 2.Try.failure【非受检事务】 回滚操作
+	 * 3.Try.failure(new Exception()); 捕获受检事务,成功提交
+	 * 4. Try.failure(new Exception()) 使用 @Transactional(rollbackFor = Exception.class)显示标注, 成功回滚
+	 */
 	@Test
 	public void withVavrTrySuccess() {
 		ProxyFactory proxyFactory = new ProxyFactory();
@@ -298,7 +328,13 @@ public class AnnotationTransactionInterceptorTests {
 		proxy.doSomethingErroneousWithCheckedExceptionAndRollbackRule();
 		assertGetTransactionAndRollbackCount(1);
 	}
+	//  vavr处理=========================================================================
 
+	/**
+	 * 1. 注解在接口上,ProxyFactory 生成代理对象,事务会生效
+	 * 2. 使用JDK代理对象,事务会生效
+	 * 2. cglib会生效
+	 */
 	@Test
 	public void withInterface() {
 		ProxyFactory proxyFactory = new ProxyFactory();
@@ -358,6 +394,7 @@ public class AnnotationTransactionInterceptorTests {
 
 	@Test
 	public void withInterfaceOnTargetJdkProxy() {
+		// 接口层使用注解
 		ProxyFactory targetFactory = new ProxyFactory();
 		targetFactory.setTarget(new TestWithInterfaceImpl());
 		targetFactory.addInterface(TestWithInterface.class);
@@ -439,7 +476,9 @@ public class AnnotationTransactionInterceptorTests {
 	public static class TestClassLevelOnly {
 
 		public void doSomething() {
+			// 事务活跃
 			assertThat(TransactionSynchronizationManager.isActualTransactionActive()).isTrue();
+			// 只读事务 false
 			assertThat(TransactionSynchronizationManager.isCurrentTransactionReadOnly()).isFalse();
 		}
 

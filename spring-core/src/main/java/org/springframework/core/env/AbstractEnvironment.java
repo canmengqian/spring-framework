@@ -498,6 +498,7 @@ public abstract class AbstractEnvironment implements ConfigurableEnvironment {
 
 	@Override
 	public ConfigurableConversionService getConversionService() {
+		// 获取转换服务
 		return this.propertyResolver.getConversionService();
 	}
 

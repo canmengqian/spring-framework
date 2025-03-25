@@ -86,9 +86,11 @@ public class DefaultConversionService extends GenericConversionService {
 	 * @throws ClassCastException if the given ConverterRegistry could not be cast to a ConversionService
 	 */
 	public static void addDefaultConverters(ConverterRegistry converterRegistry) {
+		// 添加可扩展类型的转换器和转换器工厂，例如 数字转字符串,枚举转数字
 		addScalarConverters(converterRegistry);
+		// 添加集合类转换器
 		addCollectionConverters(converterRegistry);
-
+		// 添加其他的转换器
 		converterRegistry.addConverter(new ByteBufferConverter((ConversionService) converterRegistry));
 		converterRegistry.addConverter(new StringToTimeZoneConverter());
 		converterRegistry.addConverter(new ZoneIdToTimeZoneConverter());

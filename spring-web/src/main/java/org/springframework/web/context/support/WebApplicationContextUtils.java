@@ -70,6 +70,7 @@ public abstract class WebApplicationContextUtils {
 
 
 	/**
+	 * 获取web应用上下文
 	 * Find the root {@code WebApplicationContext} for this web app, typically
 	 * loaded via {@link org.springframework.web.context.ContextLoaderListener}.
 	 * <p>Will rethrow an exception that happened on root context startup,
@@ -110,6 +111,7 @@ public abstract class WebApplicationContextUtils {
 	@Nullable
 	public static WebApplicationContext getWebApplicationContext(ServletContext sc, String attrName) {
 		Assert.notNull(sc, "ServletContext must not be null");
+		// 获取上下文对象
 		Object attr = sc.getAttribute(attrName);
 		if (attr == null) {
 			return null;
@@ -152,6 +154,7 @@ public abstract class WebApplicationContextUtils {
 			while (attrNames.hasMoreElements()) {
 				String attrName = attrNames.nextElement();
 				Object attrValue = sc.getAttribute(attrName);
+				// 是否是上下文实例
 				if (attrValue instanceof WebApplicationContext currentWac) {
 					if (wac != null) {
 						throw new IllegalStateException("No unique WebApplicationContext found: more than one " +
@@ -324,6 +327,7 @@ public abstract class WebApplicationContextUtils {
 	@SuppressWarnings("serial")
 	private static class RequestObjectFactory implements ObjectFactory<ServletRequest>, Serializable {
 
+		// 根据当前属性获取请求对象
 		@Override
 		public ServletRequest getObject() {
 			return currentRequestAttributes().getRequest();
@@ -341,7 +345,7 @@ public abstract class WebApplicationContextUtils {
 	 */
 	@SuppressWarnings("serial")
 	private static class ResponseObjectFactory implements ObjectFactory<ServletResponse>, Serializable {
-
+		// 根据当前属性获取响应对象
 		@Override
 		public ServletResponse getObject() {
 			ServletResponse response = currentRequestAttributes().getResponse();
@@ -365,6 +369,7 @@ public abstract class WebApplicationContextUtils {
 	@SuppressWarnings("serial")
 	private static class SessionObjectFactory implements ObjectFactory<HttpSession>, Serializable {
 
+		// 根据当前属性获取请求对象中的session
 		@Override
 		public HttpSession getObject() {
 			return currentRequestAttributes().getRequest().getSession();

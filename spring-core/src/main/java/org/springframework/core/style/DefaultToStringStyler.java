@@ -33,6 +33,7 @@ import org.springframework.util.ObjectUtils;
  */
 public class DefaultToStringStyler implements ToStringStyler {
 
+	//值风格
 	private final ValueStyler valueStyler;
 
 
@@ -55,23 +56,29 @@ public class DefaultToStringStyler implements ToStringStyler {
 
 	@Override
 	public void styleStart(StringBuilder buffer, Object obj) {
+		// 非数组
 		if (!obj.getClass().isArray()) {
 			buffer.append('[').append(ClassUtils.getShortName(obj.getClass()));
+			// 生成对象hash值
 			styleIdentityHashCode(buffer, obj);
 		}
+		// 生成数组[]形式的对象hash值
 		else {
 			buffer.append('[');
 			styleIdentityHashCode(buffer, obj);
 			buffer.append(' ');
+			//追加value的风格
 			styleValue(buffer, obj);
 		}
 	}
 
 	private void styleIdentityHashCode(StringBuilder buffer, Object obj) {
+		// 生成@+对象hash值
 		buffer.append('@');
 		buffer.append(ObjectUtils.getIdentityHexString(obj));
 	}
 
+	//补全后缀
 	@Override
 	public void styleEnd(StringBuilder buffer, Object o) {
 		buffer.append(']');
@@ -79,8 +86,11 @@ public class DefaultToStringStyler implements ToStringStyler {
 
 	@Override
 	public void styleField(StringBuilder buffer, String fieldName, @Nullable Object value) {
+		// 补全字段名起始值
 		styleFieldStart(buffer, fieldName);
+		// 填充值
 		styleValue(buffer, value);
+		// 补全字段结束标识符
 		styleFieldEnd(buffer, fieldName);
 	}
 

@@ -29,7 +29,7 @@ import org.springframework.lang.Nullable;
  */
 public interface PropertyResolver {
 
-	/**
+	 /**
 	 * Return whether the given property key is available for resolution,
 	 * i.e. if the value for the given key is not {@code null}.
 	 */

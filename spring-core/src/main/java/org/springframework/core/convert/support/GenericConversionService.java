@@ -548,8 +548,10 @@ public class GenericConversionService implements ConfigurableConversionService {
 		@Nullable
 		public GenericConverter find(TypeDescriptor sourceType, TypeDescriptor targetType) {
 			// Search the full type hierarchy
+			// 分别获取源对象类型和目标类型所有的获选类
 			List<Class<?>> sourceCandidates = getClassHierarchy(sourceType.getType());
 			List<Class<?>> targetCandidates = getClassHierarchy(targetType.getType());
+			// 双重循环获取对应的转换器
 			for (Class<?> sourceCandidate : sourceCandidates) {
 				for (Class<?> targetCandidate : targetCandidates) {
 					ConvertiblePair convertiblePair = new ConvertiblePair(sourceCandidate, targetCandidate);
@@ -567,14 +569,17 @@ public class GenericConversionService implements ConfigurableConversionService {
 				TypeDescriptor targetType, ConvertiblePair convertiblePair) {
 
 			// Check specifically registered converters
+			// 获取转换对
 			ConvertersForPair convertersForPair = this.converters.get(convertiblePair);
 			if (convertersForPair != null) {
+				// 直接从map中获取转换器队列中的第一个实例
 				GenericConverter converter = convertersForPair.getConverter(sourceType, targetType);
 				if (converter != null) {
 					return converter;
 				}
 			}
 			// Check ConditionalConverters for a dynamic match
+			// map中获取不到的话就从全局转换器中获取
 			for (GenericConverter globalConverter : this.globalConverters) {
 				if (((ConditionalConverter) globalConverter).matches(sourceType, targetType)) {
 					return globalConverter;

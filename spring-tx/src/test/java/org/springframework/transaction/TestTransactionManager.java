@@ -43,6 +43,7 @@ class TestTransactionManager extends AbstractPlatformTransactionManager {
 	protected TestTransactionManager(boolean existingTransaction, boolean canCreateTransaction) {
 		this.existingTransaction = existingTransaction;
 		this.canCreateTransaction = canCreateTransaction;
+		// 用不使用同步
 		setTransactionSynchronization(SYNCHRONIZATION_NEVER);
 	}
 

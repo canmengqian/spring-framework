@@ -55,30 +55,42 @@ public class AnnotationTransactionAttributeSourceTests {
 		TestBean1 tb = new TestBean1();
 		CallCountingTransactionManager ptm = new CallCountingTransactionManager();
 		AnnotationTransactionAttributeSource tas = new AnnotationTransactionAttributeSource();
+		// 注解拦截器
 		TransactionInterceptor ti = new TransactionInterceptor((TransactionManager) ptm, tas);
 
+		// 代理工厂
 		ProxyFactory proxyFactory = new ProxyFactory();
 		proxyFactory.setInterfaces(ITestBean1.class);
+		// 设置切面
 		proxyFactory.addAdvice(ti);
 		proxyFactory.setTarget(tb);
+		// 设置代理对象
 		ITestBean1 proxy = (ITestBean1) proxyFactory.getProxy();
 		proxy.getAge();
 		assertThat(ptm.commits).isEqualTo(1);
-
+		// 反序列化
 		ITestBean1 serializedProxy = SerializationTestUtils.serializeAndDeserialize(proxy);
 		serializedProxy.getAge();
+		//
 		Advised advised = (Advised) serializedProxy;
+
 		TransactionInterceptor serializedTi = (TransactionInterceptor) advised.getAdvisors()[0].getAdvice();
 		CallCountingTransactionManager serializedPtm =
 				(CallCountingTransactionManager) serializedTi.getTransactionManager();
 		assertThat(serializedPtm.commits).isEqualTo(2);
 	}
 
+	/**
+	 * 测试指定方法是否标注了@Transactional注解
+	 * @throws Exception
+	 */
 	@Test
 	public void nullOrEmpty() throws Exception {
 		Method method = Empty.class.getMethod("getAge");
 
 		AnnotationTransactionAttributeSource atas = new AnnotationTransactionAttributeSource();
+		TransactionAttribute ata=atas.getTransactionAttribute(method, Empty.class);
+
 		assertThat(atas.getTransactionAttribute(method, null)).isNull();
 
 		// Try again in case of caching
@@ -94,8 +106,10 @@ public class AnnotationTransactionAttributeSourceTests {
 		Method classMethod = ITestBean1.class.getMethod("getAge");
 
 		AnnotationTransactionAttributeSource atas = new AnnotationTransactionAttributeSource();
+		// 标注了注解的方法
 		TransactionAttribute actual = atas.getTransactionAttribute(classMethod, TestBean1.class);
 
+		// 判断事务属性是否相同
 		RuleBasedTransactionAttribute rbta = new RuleBasedTransactionAttribute();
 		rbta.getRollbackRules().add(new RollbackRuleAttribute(Exception.class));
 		assertThat(((RuleBasedTransactionAttribute) actual).getRollbackRules()).isEqualTo(rbta.getRollbackRules());
@@ -107,6 +121,7 @@ public class AnnotationTransactionAttributeSourceTests {
 	 */
 	@Test
 	public void transactionAttributeDeclaredOnCglibClassMethod() throws Exception {
+		// 获取代理对象中的@Transactional注解属性
 		Method classMethod = ITestBean1.class.getMethod("getAge");
 		TestBean1 tb = new TestBean1();
 		ProxyFactory pf = new ProxyFactory(tb);
@@ -126,11 +141,13 @@ public class AnnotationTransactionAttributeSourceTests {
 	 */
 	@Test
 	public void transactionAttributeDeclaredOnInterfaceMethodOnly() throws Exception {
+		// 获取接口方法上的@Transactional注解属性
 		Method interfaceMethod = ITestBean2.class.getMethod("getAge");
 
 		AnnotationTransactionAttributeSource atas = new AnnotationTransactionAttributeSource();
 		TransactionAttribute actual = atas.getTransactionAttribute(interfaceMethod, TestBean2.class);
-
+		actual.getLabels().forEach(System.out::println);
+		actual.getName();
 		RuleBasedTransactionAttribute rbta = new RuleBasedTransactionAttribute();
 		assertThat(((RuleBasedTransactionAttribute) actual).getRollbackRules()).isEqualTo(rbta.getRollbackRules());
 	}
@@ -140,6 +157,7 @@ public class AnnotationTransactionAttributeSourceTests {
 	 */
 	@Test
 	public void transactionAttributeOnTargetClassMethodOverridesAttributeOnInterfaceMethod() throws Exception {
+		// 注解在了接口上
 		Method interfaceMethod = ITestBean3.class.getMethod("getAge");
 		Method interfaceMethod2 = ITestBean3.class.getMethod("setAge", int.class);
 		Method interfaceMethod3 = ITestBean3.class.getMethod("getName");
@@ -196,13 +214,14 @@ public class AnnotationTransactionAttributeSourceTests {
 
 	@Test
 	public void labelsAreApplied() throws Exception {
+		// 获取类上的@Transactional注解标签
 		Method method = TestBean11.class.getMethod("getAge");
 
 		AnnotationTransactionAttributeSource atas = new AnnotationTransactionAttributeSource();
 		TransactionAttribute actual = atas.getTransactionAttribute(method, TestBean11.class);
 
 		assertThat(actual.getLabels()).containsOnly("retryable", "long-running");
-
+		// 获取方法上的@Transactional注解标签,覆盖类上的
 		method = TestBean11.class.getMethod("setAge", Integer.TYPE);
 		actual = atas.getTransactionAttribute(method, method.getDeclaringClass());
 
@@ -210,6 +229,8 @@ public class AnnotationTransactionAttributeSourceTests {
 	}
 
 	/**
+	 * 测试当方法上未指定时，事务属性是否从类中继承。
+	 * 当前类和父类都有@Transactional注解，当前类下的方法未使用@Transactional注解，则从当前类中获取
 	 * Test that transaction attribute is inherited from class
 	 * if not specified on method.
 	 */
@@ -220,12 +241,19 @@ public class AnnotationTransactionAttributeSourceTests {
 		AnnotationTransactionAttributeSource atas = new AnnotationTransactionAttributeSource();
 		TransactionAttribute actual = atas.getTransactionAttribute(method, TestBean4.class);
 
+		// 设置默认的回滚规则
 		RuleBasedTransactionAttribute rbta = new RuleBasedTransactionAttribute();
 		rbta.getRollbackRules().add(new RollbackRuleAttribute(Exception.class));
 		rbta.getRollbackRules().add(new NoRollbackRuleAttribute(IOException.class));
+		//断言注解的回滚规则是否相等
 		assertThat(((RuleBasedTransactionAttribute) actual).getRollbackRules()).isEqualTo(rbta.getRollbackRules());
 	}
 
+	/**
+	 *
+	 * 使用自定义事务注解
+	 * @throws Exception
+	 */
 	@Test
 	public void customClassAttributeDetected() throws Exception {
 		Method method = TestBean5.class.getMethod("getAge");
@@ -239,6 +267,10 @@ public class AnnotationTransactionAttributeSourceTests {
 		assertThat(((RuleBasedTransactionAttribute) actual).getRollbackRules()).isEqualTo(rbta.getRollbackRules());
 	}
 
+	/**
+	 * 自定义注解使用在方法上
+	 * @throws Exception
+	 */
 	@Test
 	public void customMethodAttributeDetected() throws Exception {
 		Method method = TestBean6.class.getMethod("getAge");
@@ -252,6 +284,10 @@ public class AnnotationTransactionAttributeSourceTests {
 		assertThat(((RuleBasedTransactionAttribute) actual).getRollbackRules()).isEqualTo(rbta.getRollbackRules());
 	}
 
+	/**
+	 * 使用自定义注解，并支持属性传递
+	 * @throws Exception
+	 */
 	@Test
 	public void customClassAttributeWithReadOnlyOverrideDetected() throws Exception {
 		Method method = TestBean7.class.getMethod("getAge");
@@ -266,7 +302,10 @@ public class AnnotationTransactionAttributeSourceTests {
 
 		assertThat(actual.isReadOnly()).isTrue();
 	}
-
+	/**
+	 * 使用自定义注解，标注在方法上,并支持属性传递
+	 * @throws Exception
+	 */
 	@Test
 	public void customMethodAttributeWithReadOnlyOverrideDetected() throws Exception {
 		Method method = TestBean8.class.getMethod("getAge");
@@ -284,13 +323,16 @@ public class AnnotationTransactionAttributeSourceTests {
 
 	@Test
 	public void customClassAttributeWithReadOnlyOverrideOnInterface() throws Exception {
+		// 接口方法上使用自定义注解
 		Method method = TestInterface9.class.getMethod("getAge");
 
+		// 获取不到@Transactional注解
 		Transactional annotation = AnnotationUtils.findAnnotation(method, Transactional.class);
 		assertThat(annotation).as("AnnotationUtils.findAnnotation should not find @Transactional for TestBean9.getAge()").isNull();
 		annotation = AnnotationUtils.findAnnotation(TestBean9.class, Transactional.class);
 		assertThat(annotation).as("AnnotationUtils.findAnnotation failed to find @Transactional for TestBean9").isNotNull();
 
+		// 成功获取到@Transactional注解
 		AnnotationTransactionAttributeSource atas = new AnnotationTransactionAttributeSource();
 		TransactionAttribute actual = atas.getTransactionAttribute(method, TestBean9.class);
 		assertThat(actual).as("Failed to retrieve TransactionAttribute for TestBean9.getAge()").isNotNull();
@@ -305,13 +347,17 @@ public class AnnotationTransactionAttributeSourceTests {
 
 	@Test
 	public void customMethodAttributeWithReadOnlyOverrideOnInterface() throws Exception {
+		// 自定义事务注解在方法上
 		Method method = TestInterface10.class.getMethod("getAge");
 
+		// AnnotationUtils获取@Transactional注解信息
 		Transactional annotation = AnnotationUtils.findAnnotation(method, Transactional.class);
 		assertThat(annotation).as("AnnotationUtils.findAnnotation failed to find @Transactional for TestBean10.getAge()").isNotNull();
+		// 类上无法获取@Transactional注解信息
 		annotation = AnnotationUtils.findAnnotation(TestBean10.class, Transactional.class);
 		assertThat(annotation).as("AnnotationUtils.findAnnotation should not find @Transactional for TestBean10").isNull();
 
+		// 成功获取到@Transactional注解信息
 		AnnotationTransactionAttributeSource atas = new AnnotationTransactionAttributeSource();
 		TransactionAttribute actual = atas.getTransactionAttribute(method, TestBean10.class);
 		assertThat(actual).as("Failed to retrieve TransactionAttribute for TestBean10.getAge()").isNotNull();
@@ -323,7 +369,7 @@ public class AnnotationTransactionAttributeSourceTests {
 
 		assertThat(actual.isReadOnly()).isTrue();
 	}
-
+// ==========================EJB相关=======================================
 	@Test
 	public void transactionAttributeDeclaredOnClassMethodWithEjb3() throws Exception {
 		Method getAgeMethod = ITestBean1.class.getMethod("getAge");
@@ -359,7 +405,7 @@ public class AnnotationTransactionAttributeSourceTests {
 		TransactionAttribute getNameAttr = atas.getTransactionAttribute(getNameMethod, Ejb3AnnotatedBean3.class);
 		assertThat(getNameAttr.getPropagationBehavior()).isEqualTo(TransactionAttribute.PROPAGATION_SUPPORTS);
 	}
-
+	// ==========================JTA相关=======================================
 	@Test
 	public void transactionAttributeDeclaredOnClassMethodWithJta() throws Exception {
 		Method getAgeMethod = ITestBean1.class.getMethod("getAge");
@@ -395,7 +441,7 @@ public class AnnotationTransactionAttributeSourceTests {
 		TransactionAttribute getNameAttr = atas.getTransactionAttribute(getNameMethod, JtaAnnotatedBean3.class);
 		assertThat(getNameAttr.getPropagationBehavior()).isEqualTo(TransactionAttribute.PROPAGATION_SUPPORTS);
 	}
-
+	// ==========================Groovy相关=======================================
 	@Test
 	public void transactionAttributeDeclaredOnGroovyClass() throws Exception {
 		Method getAgeMethod = ITestBean1.class.getMethod("getAge");
